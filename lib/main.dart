@@ -1,18 +1,18 @@
 // ignore_for_file: sized_box_for_whitespace, prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers, avoid_print
 import 'dart:math';
 
+import 'package:app_real/components/chart.dart';
 import 'package:app_real/components/transactions_form.dart';
 import 'package:app_real/components/transactions_list.dart';
 import 'package:app_real/models/transacton.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp( MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key});
-  
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +26,15 @@ class MyApp extends StatelessWidget {
           secondary: Colors.blueGrey,
         ),
         textTheme: tema.textTheme.copyWith(
-            titleLarge: TextStyle(
+          titleLarge: TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black,
+          ),
+          labelLarge: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
         appBarTheme: AppBarTheme(
@@ -40,15 +44,13 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-
-        
       ),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -56,30 +58,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _transactions = <Transaction>[
-    // Transaction(
-    //   id: 't1',
-    //   title: 'Nova Chuteira',
-    //   value: 499.80,
-    //   date: DateTime.now(),
-    // ),
-    // Transaction(
-    //   id: 't2',
-    //   title: 'Nova bola',
-    //   value: 125.90,
-    //   date: DateTime.now(),
-    // ),
+    
   ];
 
-  _addTransaction(String title, double value) {
+  List<Transaction> get _recentTransactions {
+    return _transactions.where((transacao) {
+      return transacao.date.isAfter(DateTime.now().subtract(
+        Duration(days: 7),
+      ));
+    }).toList();
+  }
+
+  _addTransaction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
         id: Random().nextDouble().toString(),
         title: title,
         value: value,
-        date: DateTime.now());
+        date: date,
+    );
     setState(() {
       _transactions.add(newTransaction);
     });
     Navigator.of(context).pop();
+    
+  }
+  _removeTransaction(String id){
+    setState(() {
+      _transactions.removeWhere((element) => element.id == id);
+    });
   }
 
   _openTransactionFormModal(BuildContext context) {
@@ -112,7 +118,6 @@ class _HomePageState extends State<HomePage> {
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
-
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -120,11 +125,8 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Card(
-                elevation: 5,
-                child: Text("Gráfico"),
-              ),
-              TansactionList(_transactions),
+              Chart(_recentTransactions),
+              TansactionList(_transactions, _removeTransaction),
             ],
           ),
         ),
